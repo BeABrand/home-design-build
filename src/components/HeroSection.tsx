@@ -41,7 +41,7 @@ const HeroSection = () => {
 
           <div className="flex flex-col sm:flex-row gap-4">
             <a
-              href="#contact"
+              href="#enquiry"
               className="gradient-gold inline-flex items-center justify-center gap-2 px-8 py-4 text-sm font-semibold tracking-wide uppercase text-secondary rounded-sm hover:opacity-90 transition-opacity"
             >
               Request a Quote <ArrowRight size={16} />

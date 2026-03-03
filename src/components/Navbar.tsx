@@ -6,8 +6,8 @@ const navLinks = [
   { label: "Services", href: "#services" },
   { label: "Residential", href: "#residential" },
   { label: "Structural", href: "#structural" },
-  { label: "Projects", href: "#projects" },
-  { label: "Deliverables", href: "#deliverables" },
+  { label: "Portfolio", href: "#portfolio" },
+  { label: "Testimonials", href: "#testimonials" },
   { label: "Contact", href: "#contact" },
 ];
 
@@ -33,7 +33,7 @@ const Navbar = () => {
             </a>
           ))}
           <a
-            href="#contact"
+            href="#enquiry"
             className="gradient-gold text-sm font-semibold px-5 py-2 rounded-sm tracking-wide uppercase text-secondary"
           >
             Get a Quote
@@ -71,7 +71,7 @@ const Navbar = () => {
                 </a>
               ))}
               <a
-                href="#contact"
+                href="#enquiry"
                 onClick={() => setOpen(false)}
                 className="gradient-gold text-sm font-semibold px-5 py-2.5 rounded-sm tracking-wide uppercase text-secondary text-center mt-2"
               >
