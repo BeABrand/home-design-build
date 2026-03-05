@@ -8,6 +8,7 @@ import DeliverablesSection from "@/components/DeliverablesSection";
 import PortfolioGallery from "@/components/PortfolioGallery";
 import Testimonials from "@/components/Testimonials";
 import ContactForm from "@/components/ContactForm";
+import FAQSection from "@/components/FAQSection";
 import ContactCTA from "@/components/ContactCTA";
 import Footer from "@/components/Footer";
 
@@ -24,6 +25,7 @@ const Index = () => {
       <PortfolioGallery />
       <Testimonials />
       <ContactForm />
+      <FAQSection />
       <ContactCTA />
       <Footer />
     </div>
