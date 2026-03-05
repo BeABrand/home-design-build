@@ -29,12 +29,12 @@ const ContactCTA = () => {
 
         <div className="grid md:grid-cols-3 gap-6 max-w-3xl mx-auto">
           <a
-            href="mailto:info@draftworks.com.au"
+            href="mailto:info@axisdrafting.com.au"
             className="bg-slate-deep border border-secondary-foreground/10 rounded-sm p-6 text-center hover:border-gold/50 transition-colors group"
           >
             <Mail size={24} className="text-gold mx-auto mb-3" />
             <h3 className="font-display font-bold mb-1 group-hover:text-gold transition-colors">Email Us</h3>
-            <p className="text-sm text-secondary-foreground/60">info@draftworks.com.au</p>
+            <p className="text-sm text-secondary-foreground/60">info@axisdrafting.com.au</p>
           </a>
           <a
             href="tel:+61400000000"
