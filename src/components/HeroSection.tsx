@@ -22,7 +22,7 @@ const HeroSection = () => {
           <div className="flex items-center gap-2 mb-6">
             <div className="h-px w-12 bg-gold" />
             <span className="text-gold text-sm font-semibold tracking-[0.2em] uppercase font-display">
-              Axis Drafting & Design
+              Build Plan & Drafting
             </span>
           </div>
 
