@@ -5,8 +5,8 @@ import axisLogo from "@/assets/axis-logo.jpeg";
 
 const navLinks = [
   { label: "Services", href: "#services" },
-  { label: "Residential", href: "#residential" },
-  { label: "Structural", href: "#structural" },
+  { label: "Council", href: "#council" },
+  { label: "Architectural", href: "#architectural" },
   { label: "Portfolio", href: "#portfolio" },
   { label: "Testimonials", href: "#testimonials" },
   { label: "FAQ", href: "#faq" },

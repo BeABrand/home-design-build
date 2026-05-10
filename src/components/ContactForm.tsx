@@ -39,14 +39,13 @@ interface UploadedFile {
 }
 
 const projectTypes = [
-  "New Residential Home",
-  "House Extension",
-  "Renovation",
-  "Granny Flat",
-  "Deck & Pergola",
-  "Structural Drafting",
-  "Steel Shop Drawings",
-  "As-Built Drawings",
+  "DA / CDC Drawings",
+  "Architectural Drafting",
+  "Construction Documentation",
+  "Revit & BIM",
+  "Shop Drawings",
+  "Estimation & Planning",
+  "Small Drafting",
   "Other",
 ];
 

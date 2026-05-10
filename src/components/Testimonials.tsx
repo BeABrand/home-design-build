@@ -7,7 +7,7 @@ const testimonials = [
     role: "Builder",
     company: "Mitchell Constructions",
     location: "Sydney, NSW",
-    text: "Axis Drafting & Design delivered our DA drawings for a duplex project in under a week. The quality was spot-on, and council had zero issues with the documentation. Highly recommend for any residential work.",
+    text: "Build Plan & Drafting delivered our DA drawings for a duplex project in under a week. The quality was spot-on, and council had zero issues with the documentation. Highly recommend for any residential work.",
     rating: 5,
   },
   {
@@ -15,7 +15,7 @@ const testimonials = [
     role: "Structural Engineer",
     company: "Chen Engineering",
     location: "Melbourne, VIC",
-    text: "We've been using Axis Drafting & Design for structural steel shop drawings for over two years. Their attention to detail on connection details and fabrication drawings saves us significant review time.",
+    text: "We've been using Build Plan & Drafting for structural steel shop drawings and construction documentation for over two years. Their attention to detail on connection details and fabrication drawings saves us significant review time.",
     rating: 5,
   },
   {
@@ -23,7 +23,7 @@ const testimonials = [
     role: "Homeowners",
     company: "",
     location: "Brisbane, QLD",
-    text: "We needed construction drawings for our home renovation and granny flat. Axis Drafting & Design made the whole process stress-free — from initial concept plans right through to council approval.",
+    text: "We needed construction drawings for our home renovation and granny flat. Build Plan & Drafting made the whole process stress-free — from initial concept plans right through to council approval.",
     rating: 5,
   },
   {
@@ -31,7 +31,7 @@ const testimonials = [
     role: "Project Manager",
     company: "Russo Developments",
     location: "Perth, WA",
-    text: "Fast turnaround, competitive pricing, and they understand Australian building standards inside out. Axis Drafting & Design is our go-to drafting partner for every new project.",
+    text: "Fast turnaround, competitive pricing, and they understand Australian building standards inside out. Build Plan & Drafting is our go-to drafting partner for every new project.",
     rating: 5,
   },
 ];
@@ -58,7 +58,7 @@ const Testimonials = () => {
             Trusted Across Australia
           </h2>
           <p className="text-muted-foreground text-lg">
-            Builders, engineers, and homeowners rely on Axis Drafting & Design for accurate, timely drafting services.
+            Builders, engineers, and homeowners rely on Build Plan & Drafting for accurate, timely drafting services.
           </p>
         </motion.div>
 
