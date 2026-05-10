@@ -1,23 +1,21 @@
 import { motion } from "framer-motion";
 
-const residential = [
-  "New residential homes",
-  "House extensions",
-  "Renovations",
-  "Granny flats",
-  "Decks & pergolas",
-  "Carports",
-  "Garage conversions",
-  "Secondary dwellings",
+const council = [
+  "DA & CDC drawings",
+  "Site plans & analysis",
+  "Building envelope plans",
+  "Landscape plans",
+  "Traffic Control Plans",
+  "Planning documentation",
 ];
 
-const structural = [
-  "Residential homes",
-  "Duplex developments",
-  "Commercial buildings",
-  "Industrial warehouses",
-  "Mezzanine floors",
-  "Small civil works",
+const architectural = [
+  "Floor plans (existing & proposed)",
+  "Elevations and sections",
+  "Renovations and extensions",
+  "New residential designs",
+  "Alfresco, decks, and outdoor structures",
+  "Layout optimisation",
 ];
 
 const ProjectTypes = () => {
@@ -42,10 +40,10 @@ const ProjectTypes = () => {
             transition={{ duration: 0.5 }}
           >
             <h3 className="font-display text-xl font-bold mb-6 text-foreground border-l-2 border-gold pl-4">
-              Residential Projects
+              Council & Approval
             </h3>
             <div className="grid grid-cols-2 gap-3">
-              {residential.map((p) => (
+              {council.map((p) => (
                 <div
                   key={p}
                   className="bg-card border border-border rounded-sm px-4 py-3 text-sm text-foreground/80"
@@ -63,10 +61,10 @@ const ProjectTypes = () => {
             transition={{ duration: 0.5, delay: 0.1 }}
           >
             <h3 className="font-display text-xl font-bold mb-6 text-foreground border-l-2 border-gold pl-4">
-              Structural Projects
+              Architectural Drafting
             </h3>
             <div className="grid grid-cols-2 gap-3">
-              {structural.map((p) => (
+              {architectural.map((p) => (
                 <div
                   key={p}
                   className="bg-card border border-border rounded-sm px-4 py-3 text-sm text-foreground/80"
