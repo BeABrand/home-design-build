@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- Dark background -->
+  <rect width="64" height="64" rx="8" fill="#1F2A3C"/>
+
+  <!-- Blueprint grid subtle -->
+  <g stroke="#2a3a5c" stroke-width="0.5" opacity="0.5">
+    <line x1="16" y1="0" x2="16" y2="64"/>
+    <line x1="32" y1="0" x2="32" y2="64"/>
+    <line x1="48" y1="0" x2="48" y2="64"/>
+    <line x1="0" y1="16" x2="64" y2="16"/>
+    <line x1="0" y1="32" x2="64" y2="32"/>
+    <line x1="0" y1="48" x2="64" y2="48"/>
+  </g>
+
+  <!-- Architectural house outline (miniature) -->
+  <g stroke="#4a7fc1" stroke-width="1.2" fill="none" opacity="0.7">
+    <polyline points="14,30 32,16 50,30"/>
+    <rect x="18" y="30" width="28" height="18"/>
+    <rect x="27" y="38" width="10" height="10"/>
+  </g>
+
+  <!-- "DW" monogram in gold -->
+  <text x="32" y="56" font-family="Space Grotesk, Arial, sans-serif" font-size="9" font-weight="700" text-anchor="middle" fill="#E8941A" letter-spacing="1">DW</text>
+
+  <!-- Gold accent line -->
+  <line x1="10" y1="58" x2="54" y2="58" stroke="#E8941A" stroke-width="1.5" opacity="0.6"/>
+</svg>
