@@ -37,12 +37,12 @@ const ContactCTA = () => {
             <p className="text-sm text-secondary-foreground/60">info@buildplananddrafting.com.au</p>
           </a>
           <a
-            href="tel:+61400000000"
+            href="tel:+61480024017"
             className="bg-slate-deep border border-secondary-foreground/10 rounded-sm p-6 text-center hover:border-gold/50 transition-colors group"
           >
             <Phone size={24} className="text-gold mx-auto mb-3" />
             <h3 className="font-display font-bold mb-1 group-hover:text-gold transition-colors">Call Us</h3>
-            <p className="text-sm text-secondary-foreground/60">+61 400 000 000</p>
+            <p className="text-sm text-secondary-foreground/60">+61 480 024 017</p>
           </a>
           <div className="bg-slate-deep border border-secondary-foreground/10 rounded-sm p-6 text-center">
             <MapPin size={24} className="text-gold mx-auto mb-3" />
