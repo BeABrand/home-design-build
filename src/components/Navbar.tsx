@@ -20,7 +20,7 @@ const Navbar = () => {
     <nav className="fixed top-0 left-0 right-0 z-50 bg-secondary/95 backdrop-blur-md border-b border-border/20">
       <div className="max-w-7xl mx-auto px-6 lg:px-12 flex items-center justify-between h-16">
         <a href="#" className="flex items-center">
-          <img src={axisLogo} alt="Build Plan & Drafting" className="h-10 w-auto" />
+          <img src={buildplanLogo} alt="Build Plan & Drafting" className="h-10 w-auto" />
         </a>
 
         {/* Desktop */}
