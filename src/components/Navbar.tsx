@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X } from "lucide-react";
-import axisLogo from "@/assets/axis-logo.jpeg";
+import buildplanLogo from "@/assets/buildplan-logo.png";
 
 const navLinks = [
   { label: "Services", href: "#services" },

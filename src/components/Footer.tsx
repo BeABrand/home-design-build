@@ -1,4 +1,4 @@
-import axisLogo from "@/assets/axis-logo.jpeg";
+import buildplanLogo from "@/assets/buildplan-logo.png";
 
 const Footer = () => {
   return (
