@@ -22,7 +22,7 @@ const HeroSection = () => {
           <div className="flex items-center gap-2 mb-6">
             <div className="h-px w-12 bg-gold" />
             <span className="text-gold text-sm font-semibold tracking-[0.2em] uppercase font-display">
-              Australian Drafting Specialists
+              Build Plan & Drafting
             </span>
           </div>
 
@@ -35,8 +35,7 @@ const HeroSection = () => {
           </h1>
 
           <p className="text-lg md:text-xl text-secondary-foreground/70 max-w-xl mb-10 font-body leading-relaxed">
-            Professional residential architectural and structural engineering drafting services. 
-            From DA submissions to construction documentation — built for builders, engineers, and architects across Australia.
+            Professional council approval drawings, architectural drafting, construction documentation, and shop drawing services. From DA submissions to fabrication details — built for builders, engineers, and architects across Australia.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4">

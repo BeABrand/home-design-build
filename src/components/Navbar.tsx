@@ -1,13 +1,15 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X } from "lucide-react";
+import axisLogo from "@/assets/axis-logo.jpeg";
 
 const navLinks = [
   { label: "Services", href: "#services" },
-  { label: "Residential", href: "#residential" },
-  { label: "Structural", href: "#structural" },
+  { label: "Council", href: "#council" },
+  { label: "Architectural", href: "#architectural" },
   { label: "Portfolio", href: "#portfolio" },
   { label: "Testimonials", href: "#testimonials" },
+  { label: "FAQ", href: "#faq" },
   { label: "Contact", href: "#contact" },
 ];
 
@@ -17,8 +19,8 @@ const Navbar = () => {
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-secondary/95 backdrop-blur-md border-b border-border/20">
       <div className="max-w-7xl mx-auto px-6 lg:px-12 flex items-center justify-between h-16">
-        <a href="#" className="font-display text-xl font-bold text-secondary-foreground tracking-tight">
-          DRAFT<span className="text-gold">WORKS</span>
+        <a href="#" className="flex items-center">
+          <img src={axisLogo} alt="Build Plan & Drafting" className="h-10 w-auto" />
         </a>
 
         {/* Desktop */}

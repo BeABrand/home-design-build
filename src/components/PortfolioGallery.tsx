@@ -9,12 +9,12 @@ import portfolio5 from "@/assets/portfolio-5.jpg";
 import portfolio6 from "@/assets/portfolio-6.jpg";
 
 const projects = [
-  { src: portfolio1, title: "Residential Floor Plan", category: "Architectural Drafting", location: "Sydney, NSW" },
-  { src: portfolio2, title: "Two-Storey Home", category: "New Build", location: "Melbourne, VIC" },
-  { src: portfolio3, title: "Commercial Steel Structure", category: "Structural Drafting", location: "Brisbane, QLD" },
-  { src: portfolio4, title: "Granny Flat Elevation", category: "Secondary Dwelling", location: "Perth, WA" },
-  { src: portfolio5, title: "Duplex Development", category: "Multi-Dwelling", location: "Adelaide, SA" },
-  { src: portfolio6, title: "Slab Reinforcement Detail", category: "Concrete Detailing", location: "Gold Coast, QLD" },
+  { src: portfolio1, title: "DA Drawing Set", category: "Council Approval", location: "Sydney, NSW" },
+  { src: portfolio2, title: "Two-Storey Home Design", category: "Architectural Drafting", location: "Melbourne, VIC" },
+  { src: portfolio3, title: "Commercial Construction Docs", category: "Construction Documentation", location: "Brisbane, QLD" },
+  { src: portfolio4, title: "Revit BIM Model", category: "Revit & BIM", location: "Perth, WA" },
+  { src: portfolio5, title: "Steel Shop Drawing", category: "Shop Drawings", location: "Adelaide, SA" },
+  { src: portfolio6, title: "Quantity Takeoff Plan", category: "Estimation Support", location: "Gold Coast, QLD" },
 ];
 
 const categories = ["All", ...Array.from(new Set(projects.map((p) => p.category)))];
