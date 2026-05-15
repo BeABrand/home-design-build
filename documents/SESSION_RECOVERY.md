@@ -174,6 +174,30 @@ Navbar (fixed, dark) → HeroSection → ServicesOverview → ResidentialSection
   - `./node_modules/.bin/tsc --noEmit`
   - `npm run build`
 
+## 2026-05-15 E2E Test Setup Session
+
+**Branch**: `fix/typescript-lint-errors-and-warnings` (Playwright added to this branch)
+
+**Objective**: Install Playwright, configure chromium-only E2E testing, and author three tests for the enquiry form.
+
+**Key discovery**: Apache2 is bound to port 8080 on this machine; Vite dev server falls back to port 8081. `playwright.config.ts` uses `port: 8081` and `baseURL: "http://localhost:8081"`.
+
+**Files created/modified**:
+| File | Change |
+|------|--------|
+| `playwright.config.ts` | New: chromium-only config, port 8081, `reuseExistingServer: !process.env.CI` |
+| `tests/e2e/enquiry-form.spec.ts` | New: 3 E2E tests (validation, happy path, file upload) |
+| `package.json` | Added `test:e2e` and `test:e2e:ui` scripts |
+| `.gitignore` | Added Playwright output directories |
+
+**Test results**: 3/3 PASSED (validation errors, happy-path mock, file upload rejection)
+
+**Full pipeline**:
+- `tsc --noEmit`: clean
+- `eslint . --max-warnings 0`: clean
+- `npm test` (Vitest): 86/86 passed
+- `npx playwright test --reporter=list`: 3/3 passed in 2.8s
+
 ## 2026-05-15 Unit Test Coverage Session
 
 **Branch**: `fix/enquiry-smtp-env-loading` (unchanged — tests added on this branch)

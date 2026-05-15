@@ -130,6 +130,7 @@ Body font:     Inter (paragraphs, descriptions)
 | 2026-05-11 | docs/update-readme-and-session-docs | Rewrote README.md; created documents/SESSION_RECOVERY.md and documents/RESUME_INSTRUCTIONS.md (this file) |
 | 2026-05-15 | fix/enquiry-email-upload-flow | Added enquiry email backend flow with Nodemailer, multipart upload parsing, frontend `FormData` submission, and runtime config for SMTP/public upload URLs |
 | 2026-05-15 | fix/enquiry-smtp-env-loading | Unit tests added: `src/lib/__tests__/enquiry.test.ts` (40), `src/lib/__tests__/send-enquiry.test.ts` (30), `src/components/__tests__/contact-form-helpers.test.ts` (15); `isSubmissionPayload` moved to `enquiry.ts`; pure helpers exported from `send-enquiry.ts` |
+| 2026-05-15 | fix/typescript-lint-errors-and-warnings | Playwright E2E installed; `playwright.config.ts` (chromium, port 8081); `tests/e2e/enquiry-form.spec.ts` (3 tests: validation, happy path mock, file upload rejection) |
 
 ---
 
@@ -159,11 +160,9 @@ Body font:     Inter (paragraphs, descriptions)
 
 ## 2026-05-15 Current Resume Point
 
-- Current branch: `fix/enquiry-smtp-env-loading`
-- Latest issue fixed:
-  - local dev showed `SMTP_USER and SMTP_PASS must be configured`
-  - `.env` existed, but the Vite dev server process was not loading those server-side values into `process.env`
-- Latest code change:
-  - `vite.config.ts` now uses `loadEnv(mode, process.cwd(), "")` and hydrates `process.env` before the local enquiry middleware runs
-- Important note:
-  - restart the local Vite dev server after this change so the new env-loading path is active
+- Current branch: `fix/typescript-lint-errors-and-warnings`
+- Latest work: Playwright E2E test setup
+- Dev server note: Apache2 occupies port 8080; Vite dev server runs on port 8081
+- Run E2E tests: `npm run test:e2e` (or `npx playwright test --reporter=list`)
+- E2E tests live at: `tests/e2e/enquiry-form.spec.ts`
+- Playwright config: `playwright.config.ts` (chromium only, baseURL `http://localhost:8081`)
