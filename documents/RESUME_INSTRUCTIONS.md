@@ -263,8 +263,8 @@ Determine your region by logging into Zoho web mail and reading the URL: `mail.z
 | Field | Value |
 |-------|-------|
 | Business name | Build Plan & Drafting |
-| Domain | `buildplanandrafting.com.au` |
-| Email | `info@buildplanandrafting.com.au` |
+| Domain | `buildplandrafting.com.au` |
+| Email | `info@buildplandrafting.com.au` |
 | Phone | `+61 480 024 017` |
 | Region | Australia-wide service; mailbox on Zoho Workspace AU (`smtppro.zoho.com.au`) |
 

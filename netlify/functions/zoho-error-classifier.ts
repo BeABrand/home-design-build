@@ -72,7 +72,7 @@ export const classifyZohoSmtpError = (
   const emailRegion = inferRegionFromEmail(context.user);
   const hostRegion = inferRegionFromHost(context.host);
 
-  const clientMessage = "Unable to send your enquiry at this time. Please try again later or email us directly at info@buildplanandrafting.com.au.";
+  const clientMessage = "Unable to send your enquiry at this time. Please try again later or email us directly at info@buildplandrafting.com.au.";
 
   // Cause 1: Wrong regional SMTP host
   if (
