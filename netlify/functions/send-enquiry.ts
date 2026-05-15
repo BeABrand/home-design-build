@@ -355,7 +355,7 @@ export const handler = async (event: NetlifyEvent): Promise<NetlifyResponse> => 
     const origin = getRequestOrigin(event.headers);
     const { storedFiles, warning } = await persistFiles(files, origin);
     const transporter = getTransporter();
-    const recipient = process.env.ENQUIRY_TO_EMAIL?.trim() || "info@buildplanandrafting.com.au";
+    const recipient = process.env.ENQUIRY_TO_EMAIL?.trim() || "info@buildplandrafting.com.au";
     const fromAddress = process.env.ENQUIRY_FROM_EMAIL?.trim() || process.env.SMTP_USER?.trim() || recipient;
     const fromName = process.env.ENQUIRY_FROM_NAME?.trim() || "Build Plan Drafting Website";
 
@@ -395,7 +395,7 @@ export const handler = async (event: NetlifyEvent): Promise<NetlifyResponse> => 
     return jsonResponse(500, {
       ok: false,
       error:
-        "Unable to process your enquiry at this time. Please try again later or email us directly at info@buildplanandrafting.com.au.",
+        "Unable to process your enquiry at this time. Please try again later or email us directly at info@buildplandrafting.com.au.",
     });
   }
 };

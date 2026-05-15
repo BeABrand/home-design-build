@@ -8,8 +8,8 @@ Professional council approval, architectural, and construction drafting services
 
 | | |
 |---|---|
-| Domain | `buildplanandrafting.com.au` |
-| Email | `info@buildplanandrafting.com.au` |
+| Domain | `buildplandrafting.com.au` |
+| Email | `info@buildplandrafting.com.au` |
 | Phone | `+61 480 024 017` |
 | Service area | Australia-wide |
 | Mailbox host | Zoho Workspace (Australian region) |
@@ -186,7 +186,7 @@ See `.env.example` for the full annotated list. Critical ones:
 | `SMTP_HOST` | **Must match Zoho region**. For AU Workspace: `smtppro.zoho.com.au`. Other regions documented in `.env.example`. |
 | `SMTP_PORT` | `465` for SSL |
 | `SMTP_SECURE` | `true` |
-| `SMTP_USER` | Full Zoho mailbox address (e.g. `info@buildplanandrafting.com.au`) |
+| `SMTP_USER` | Full Zoho mailbox address (e.g. `info@buildplandrafting.com.au`) |
 | `SMTP_PASS` | **App-specific password** from Zoho → Security → App Passwords. NOT the regular login password. |
 | `ENQUIRY_TO_EMAIL` | Recipient mailbox |
 | `ENQUIRY_FROM_EMAIL` | Must equal `SMTP_USER` or a verified Zoho alias |

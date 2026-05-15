@@ -130,7 +130,7 @@ Navbar (fixed, dark) → HeroSection → ServicesOverview → ResidentialSection
 
 ## 2026-05-15 Session Update
 
-- User request: wire the `Request a Free Quote` form to send a real enquiry email to `info@buildplanandrafting.com.au`, including uploaded files and file links where possible, while following `/home/kimemia/.claude/CLAUDE.md`.
+- User request: wire the `Request a Free Quote` form to send a real enquiry email to `info@buildplandrafting.com.au`, including uploaded files and file links where possible, while following `/home/kimemia/.claude/CLAUDE.md`.
 - Working branch: `fix/enquiry-email-upload-flow`
 - Implemented:
   - Shared enquiry validation in `src/lib/enquiry.ts`
@@ -410,8 +410,8 @@ The architect's H-2 (no rate limiting on the function endpoint) is still open �
 | Field | Value | Source |
 |-------|-------|--------|
 | Business name | Build Plan & Drafting | `Navbar.tsx`, `Footer.tsx`, `HeroSection.tsx`, `index.html` schema.org |
-| Domain | `buildplanandrafting.com.au` | `ContactCTA.tsx:32` mailto, `.env`, error classifier `clientMessage` |
-| Email | `info@buildplanandrafting.com.au` | `ContactCTA.tsx:37`, `.env` SMTP_USER + ENQUIRY_TO_EMAIL |
+| Domain | `buildplandrafting.com.au` | `ContactCTA.tsx:32` mailto, `.env`, error classifier `clientMessage` |
+| Email | `info@buildplandrafting.com.au` | `ContactCTA.tsx:37`, `.env` SMTP_USER + ENQUIRY_TO_EMAIL |
 | Phone | `+61 480 024 017` | `ContactCTA.tsx:40,45` |
 | Mailbox host | Zoho Workspace, AU region | per Zoho diagnostic session |
 

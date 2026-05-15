@@ -27,7 +27,7 @@ function makeSmtpError(
 
 // The single generic string the classifier must always return to the client.
 const EXPECTED_CLIENT_MESSAGE =
-  "Unable to send your enquiry at this time. Please try again later or email us directly at info@buildplanandrafting.com.au.";
+  "Unable to send your enquiry at this time. Please try again later or email us directly at info@buildplandrafting.com.au.";
 
 // ---------------------------------------------------------------------------
 // 1. wrong-region — AU email, US SMTP host
@@ -41,7 +41,7 @@ describe("classifyZohoSmtpError", () => {
     });
     const diagnosis = classifyZohoSmtpError(error, {
       host: "smtppro.zoho.com",
-      user: "info@buildplanandrafting.com.au",
+      user: "info@buildplandrafting.com.au",
     });
 
     expect(diagnosis.cause).toBe("wrong-region");
@@ -60,7 +60,7 @@ describe("classifyZohoSmtpError", () => {
     });
     const diagnosis = classifyZohoSmtpError(error, {
       host: "smtppro.zoho.com.au",
-      user: "info@buildplanandrafting.com.au",
+      user: "info@buildplandrafting.com.au",
     });
 
     expect(diagnosis.cause).toBe("app-password-required");
@@ -120,7 +120,7 @@ describe("classifyZohoSmtpError", () => {
     const error = makeSmtpError("Connection timed out", { code: "ETIMEDOUT" });
     const diagnosis = classifyZohoSmtpError(error, {
       host: "smtppro.zoho.com.au",
-      user: "info@buildplanandrafting.com.au",
+      user: "info@buildplandrafting.com.au",
     });
 
     expect(diagnosis.cause).toBe("network");
@@ -196,12 +196,12 @@ describe("classifyZohoSmtpError", () => {
       // wrong-region
       classifyZohoSmtpError(
         makeSmtpError("Auth failed", { code: "EAUTH", responseCode: 535 }),
-        { host: "smtppro.zoho.com", user: "info@buildplanandrafting.com.au" },
+        { host: "smtppro.zoho.com", user: "info@buildplandrafting.com.au" },
       ),
       // app-password-required AU
       classifyZohoSmtpError(
         makeSmtpError("Auth failed", { code: "EAUTH", responseCode: 535 }),
-        { host: "smtppro.zoho.com.au", user: "info@buildplanandrafting.com.au" },
+        { host: "smtppro.zoho.com.au", user: "info@buildplandrafting.com.au" },
       ),
       // app-password-required US
       classifyZohoSmtpError(
@@ -216,7 +216,7 @@ describe("classifyZohoSmtpError", () => {
       // network ETIMEDOUT
       classifyZohoSmtpError(
         makeSmtpError("Timeout", { code: "ETIMEDOUT" }),
-        { host: "smtppro.zoho.com.au", user: "info@buildplanandrafting.com.au" },
+        { host: "smtppro.zoho.com.au", user: "info@buildplandrafting.com.au" },
       ),
       // network ESOCKET
       classifyZohoSmtpError(
@@ -256,10 +256,10 @@ describe("classifyZohoSmtpError", () => {
     });
     const diagnosis = classifyZohoSmtpError(error, {
       host: "smtppro.zoho.com",
-      user: "info@buildplanandrafting.com.au",
+      user: "info@buildplandrafting.com.au",
     });
 
-    expect(diagnosis.operatorMessage).toContain("inf***@buildplanandrafting.com.au");
+    expect(diagnosis.operatorMessage).toContain("info***@buildplandrafting.com.au");
     expect(diagnosis.operatorMessage).not.toContain("info@");
   });
 
