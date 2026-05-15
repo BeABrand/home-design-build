@@ -38,14 +38,6 @@ interface UploadedFile {
 const ENQUIRY_ENDPOINT =
   import.meta.env.VITE_ENQUIRY_ENDPOINT?.trim() || "/.netlify/functions/send-enquiry";
 
-const isSubmissionPayload = (value: unknown): value is SubmissionPayload => {
-  if (typeof value !== "object" || value === null) {
-    return false;
-  }
-  const candidate = value as { ok?: unknown };
-  return typeof candidate.ok === "boolean";
-};
-
 const parseSubmissionResponse = async (response: Response): Promise<SubmissionPayload> => {
   const responseText = await response.text();
   const contentType = response.headers.get("content-type") || "";
@@ -188,8 +180,12 @@ const ContactForm = () => {
       });
       const payload = await parseSubmissionResponse(response);
 
-      if (!response.ok || !payload.ok) {
-        throw new Error(payload.error || "Unable to send your enquiry right now.");
+      if (!payload.ok) {
+        const errorMsg = "error" in payload ? payload.error : "Unable to send your enquiry right now.";
+        throw new Error(errorMsg);
+      }
+      if (!response.ok) {
+        throw new Error("Unable to send your enquiry right now.");
       }
 
       form.reset();

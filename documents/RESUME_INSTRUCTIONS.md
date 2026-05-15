@@ -204,3 +204,16 @@ Priority order. Each item should go on its own branch (e.g. `fix/enquiry-smtp-er
 8. **MEDIUM architecture** — `public/storage/` is dead on Netlify CDN. Migrate to Netlify Blobs or S3/R2 with signed URLs.
 9. **MEDIUM refactor** — lift `siteVisitDate` from `useState` into RHF schema (eliminate parallel state).
 10. **LOW security** — dev middleware (`vite.config.ts:19`) should cap request body to ~6 MB.
+
+## 2026-05-15 WebStorm Strict TypeScript Errors Resume Point
+
+- **Current branch**: `fix/webstorm-strict-typescript-errors`
+- **Always use `tsc --build`** — NOT `tsc --noEmit`. The project now has 3 tsconfigs via project references (`tsconfig.app.json` for `src/`, `tsconfig.node.json` for `vite.config.ts`, `tsconfig.netlify.json` for `netlify/`). Only `tsc --build` covers all three. `tsc --noEmit` only covers `src/`, so it WILL pass even when netlify code is broken.
+- **Lib version**: `tsconfig.app.json` now sets `target: "ES2021"` and `lib: ["ES2021", "DOM", "DOM.Iterable"]` — `replaceAll` and other ES2021 features are available.
+- **Enquiry schemas split**: 
+  - `enquirySubmissionSchema` (server) — strict `z.enum(projectTypes)` — Netlify function uses this
+  - `enquiryClientSchema` (form) — uses `z.string().superRefine(...)` for projectType so RHF can keep `""` as default; runtime still rejects `""` and invalid values
+- **Single source of truth** for `isSubmissionPayload` — `src/lib/enquiry.ts`. Never re-declare it in `ContactForm.tsx` (TS2440).
+- **Discriminated union narrowing**: when checking the response, split `!response.ok` and `!payload.ok` into separate `if` blocks rather than combining with `||`, so TS can narrow `payload` properly.
+- **`.gitignore`**: `*.tsbuildinfo` is ignored — these are project-references build caches and should never be committed.
+- **`@types/nodemailer`** is in devDependencies — required because `tsconfig.netlify.json` now type-checks the Netlify function which imports nodemailer.

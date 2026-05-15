@@ -40,7 +40,27 @@ export const enquirySubmissionSchema = z.object({
   siteVisitDate: optionalDateStringSchema,
 });
 
-export const enquiryClientSchema = enquirySubmissionSchema.omit({ siteVisitDate: true });
+export const enquiryClientSchema = enquirySubmissionSchema
+  .omit({ siteVisitDate: true })
+  .extend({
+    projectType: z
+      .string()
+      .superRefine((value, ctx) => {
+        if (value === "") {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Please select a project type",
+          });
+          return;
+        }
+        if (!(projectTypes as readonly string[]).includes(value)) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Please select a valid project type",
+          });
+        }
+      }),
+  });
 
 export type EnquirySubmission = z.infer<typeof enquirySubmissionSchema>;
 export type EnquiryFormValues = z.infer<typeof enquiryClientSchema>;
