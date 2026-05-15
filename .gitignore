@@ -34,3 +34,6 @@ test-results/
 playwright-report/
 playwright-results.xml
 playwright-results.json
+
+# TypeScript project-references build cache
+*.tsbuildinfo

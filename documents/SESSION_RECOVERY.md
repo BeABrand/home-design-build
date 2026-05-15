@@ -307,3 +307,39 @@ Navbar (fixed, dark) → HeroSection → ServicesOverview → ResidentialSection
 8. **MEDIUM architecture** — migrate `public/storage/` runtime writes to Netlify Blobs or S3/R2 with signed URLs
 9. **MEDIUM refactor** — lift `siteVisitDate` into the RHF schema instead of parallel useState in `ContactForm.tsx`
 10. **LOW security** — dev middleware in `vite.config.ts` should cap request body size to ~6 MB
+
+## 2026-05-15 WebStorm Strict TypeScript Errors Session
+
+**Branch**: `fix/webstorm-strict-typescript-errors` (created from `fix/typescript-lint-errors-and-warnings`)
+
+**Root cause discovered**: `tsc --noEmit` was passing on the previous branch but WebStorm was flagging 5 type errors. The reasons:
+- `tsconfig.app.json` had `include: ["src"]` and `tsconfig.node.json` had `include: ["vite.config.ts"]` — **neither covered `netlify/functions/`**. Running `tsc --noEmit` literally never type-checked the Netlify function. WebStorm did, because it open-checks any file.
+- `tsconfig.app.json` had `lib: ["ES2020", ...]` but the code uses `String.prototype.replaceAll` which is ES2021.
+- The previous tdd-guide agent left a duplicate local `isSubmissionPayload` const in `ContactForm.tsx` alongside the import.
+
+**Five errors fixed**:
+
+| # | Error | Location | Fix |
+|---|-------|----------|-----|
+| 1 | TS2440 — duplicate `isSubmissionPayload` | `ContactForm.tsx:41-47` | Deleted local const; kept the import from `@/lib/enquiry` |
+| 2 | TS2339 — `payload.error` does not exist | `ContactForm.tsx:191-193` | Split `if (!response.ok || !payload.ok)` into two sequential narrowing checks so TS can discriminate the union |
+| 3 | TS2322 — `""` not assignable to projectType enum | `ContactForm.tsx:103` defaultValues | Widened `enquiryClientSchema.projectType` via `superRefine` to accept `string` at form-input time but reject `""`/invalid on submit. **Server schema `enquirySubmissionSchema` kept strict** (still uses `z.enum`) |
+| 4 | TS2550 — `replaceAll` not in lib | `netlify/functions/send-enquiry.ts` | `tsconfig.app.json` `lib` + `target` bumped from ES2020 → ES2021 |
+| 5 | TS2550 — `replaceAll` on template literal type | `netlify/functions/send-enquiry.ts:244` (`randomUUID().replaceAll`) | Same fix as #4 |
+
+**Additional fixes uncovered by the new tsc scope**:
+- `tsconfig.netlify.json` was created (extends `tsconfig.app.json`, adds `types: ["node"]`, includes `netlify/`) and referenced from root `tsconfig.json` — now `tsc --build` covers netlify code
+- This exposed: `nodemailer` had no types → installed `@types/nodemailer@^8.0.0` as devDependency
+- This exposed: `sidebar-utils.ts` had a duplicate `SidebarContext` export (line 38 already exports the type+value pair via TS auto-merge; line 41 `export type { SidebarContext };` was a redundant duplicate). Removed line 41.
+
+**`.gitignore`** — added `*.tsbuildinfo` for the project-references build cache.
+
+**Pipeline state at end of session**:
+| Check | Result |
+|-------|--------|
+| `tsc --build` (full project-references) | clean — covers `src/`, `vite.config.ts`, and `netlify/` |
+| `eslint . --max-warnings 0` | clean |
+| `npm test` (Vitest) | 86/86 passed |
+| `npm run build` | clean |
+
+**Key takeaway for next session**: always use `tsc --build` (project-references aware), NOT `tsc --noEmit`, to verify the full codebase including the Netlify functions folder.

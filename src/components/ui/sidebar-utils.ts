@@ -38,4 +38,3 @@ export {
   SidebarContext,
   useSidebar,
 };
-export type { SidebarContext };
