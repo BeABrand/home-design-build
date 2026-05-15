@@ -127,3 +127,18 @@ Navbar (fixed, dark) → HeroSection → ServicesOverview → ResidentialSection
 3. **Portfolio images**: Current images are stock/placeholder photos — should be replaced with actual DraftWorks project drawings.
 4. **Deployment target**: No CI/CD or hosting config present. Likely Vercel or Netlify given Vite setup.
 5. **`lovable-tagger` in `package-lock.json`**: The lockfile still references this package. Running `npm install` after removing it will clean up the lockfile.
+
+## 2026-05-15 Session Update
+
+- User request: wire the `Request a Free Quote` form to send a real enquiry email to `info@buildplanandrafting.com.au`, including uploaded files and file links where possible, while following `/home/kimemia/.claude/CLAUDE.md`.
+- Working branch: `fix/enquiry-email-upload-flow`
+- Implemented:
+  - Shared enquiry validation in `src/lib/enquiry.ts`
+  - Netlify function `netlify/functions/send-enquiry.ts` using `nodemailer` and multipart upload parsing
+  - Frontend form submission rewrite in `src/components/ContactForm.tsx`
+  - Runtime config in `netlify.toml` and `.env.example`
+  - Upload placeholder directory in `public/storage/.gitkeep`
+- Deployment constraint confirmed:
+  - Zoho mail DNS records in screenshots look aligned.
+  - Static Netlify hosting does not expose runtime-written files in the repo `public/` directory as live public assets.
+  - Current implementation sends uploaded files as email attachments and only emits public file URLs when the configured storage path is both writable and actually served publicly.

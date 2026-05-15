@@ -1,9 +1,8 @@
-import { useState, useRef } from "react";
+import { useRef, useState, type ChangeEvent } from "react";
 import { motion } from "framer-motion";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { Send, CheckCircle, Upload, X, CalendarIcon } from "lucide-react";
+import { CalendarIcon, CheckCircle, LoaderCircle, Send, Upload, X } from "lucide-react";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,57 +18,66 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
-const ACCEPTED_TYPES = ["image/jpeg", "image/png", "image/webp", "application/pdf"];
-
-const enquirySchema = z.object({
-  name: z.string().trim().min(1, "Name is required").max(100, "Name must be under 100 characters"),
-  email: z.string().trim().email("Please enter a valid email").max(255),
-  phone: z.string().trim().min(1, "Phone number is required").max(20, "Phone must be under 20 characters"),
-  projectType: z.string().trim().min(1, "Please select a project type"),
-  message: z.string().trim().min(1, "Message is required").max(2000, "Message must be under 2000 characters"),
-});
-
-type EnquiryForm = z.infer<typeof enquirySchema>;
+import {
+  ACCEPTED_UPLOAD_EXTENSIONS,
+  ACCEPTED_UPLOAD_TYPES,
+  MAX_FILE_COUNT,
+  MAX_FILE_SIZE,
+  enquiryClientSchema,
+  projectTypes,
+  type EnquiryFormValues,
+} from "@/lib/enquiry";
 
 interface UploadedFile {
   file: File;
   preview: string | null;
 }
 
-const projectTypes = [
-  "DA / CDC Drawings",
-  "Architectural Drafting",
-  "Construction Documentation",
-  "Revit & BIM",
-  "Shop Drawings",
-  "Estimation & Planning",
-  "Small Drafting",
-  "Other",
-];
+interface SubmissionResponse {
+  ok: boolean;
+  error?: string;
+  warning?: string;
+}
+
+const ENQUIRY_ENDPOINT =
+  import.meta.env.VITE_ENQUIRY_ENDPOINT?.trim() || "/.netlify/functions/send-enquiry";
 
 const ContactForm = () => {
   const [submitted, setSubmitted] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [siteVisitDate, setSiteVisitDate] = useState<Date | undefined>();
   const [fileError, setFileError] = useState<string | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submitWarning, setSubmitWarning] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const form = useForm<EnquiryForm>({
-    resolver: zodResolver(enquirySchema),
+  const form = useForm<EnquiryFormValues>({
+    resolver: zodResolver(enquiryClientSchema),
     defaultValues: { name: "", email: "", phone: "", projectType: "", message: "" },
   });
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const clearUploadedFiles = () => {
+    setUploadedFiles((currentFiles) => {
+      currentFiles.forEach((uploadedFile) => {
+        if (uploadedFile.preview) {
+          URL.revokeObjectURL(uploadedFile.preview);
+        }
+      });
+      return [];
+    });
+  };
+
+  const handleFileUpload = (e: ChangeEvent<HTMLInputElement>) => {
     setFileError(null);
+    setSubmitError(null);
     const files = e.target.files;
     if (!files) return;
 
     const newFiles: UploadedFile[] = [];
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
-      if (!ACCEPTED_TYPES.includes(file.type)) {
+      if (!ACCEPTED_UPLOAD_TYPES.includes(file.type as (typeof ACCEPTED_UPLOAD_TYPES)[number])) {
         setFileError("Only JPG, PNG, WebP, and PDF files are accepted.");
         continue;
       }
@@ -77,8 +85,8 @@ const ContactForm = () => {
         setFileError("Each file must be under 10MB.");
         continue;
       }
-      if (uploadedFiles.length + newFiles.length >= 5) {
-        setFileError("Maximum 5 files allowed.");
+      if (uploadedFiles.length + newFiles.length >= MAX_FILE_COUNT) {
+        setFileError(`Maximum ${MAX_FILE_COUNT} files allowed.`);
         break;
       }
       const preview = file.type.startsWith("image/") ? URL.createObjectURL(file) : null;
@@ -97,14 +105,50 @@ const ContactForm = () => {
     setFileError(null);
   };
 
-  const onSubmit = (data: EnquiryForm) => {
-    console.log("Enquiry submitted:", {
-      ...data,
-      email: "[redacted]",
-      files: uploadedFiles.length,
-      siteVisitDate: siteVisitDate ? format(siteVisitDate, "PPP") : "Not requested",
-    });
-    setSubmitted(true);
+  const onSubmit = async (data: EnquiryFormValues) => {
+    setIsSubmitting(true);
+    setSubmitError(null);
+    setSubmitWarning(null);
+
+    try {
+      const formData = new FormData();
+      formData.set("name", data.name);
+      formData.set("email", data.email);
+      formData.set("phone", data.phone);
+      formData.set("projectType", data.projectType);
+      formData.set("message", data.message);
+
+      if (siteVisitDate) {
+        formData.set("siteVisitDate", siteVisitDate.toISOString());
+      }
+
+      uploadedFiles.forEach(({ file }) => {
+        formData.append("files", file);
+      });
+
+      const response = await fetch(ENQUIRY_ENDPOINT, {
+        method: "POST",
+        body: formData,
+      });
+      const payload = (await response.json()) as SubmissionResponse;
+
+      if (!response.ok || !payload.ok) {
+        throw new Error(payload.error || "Unable to send your enquiry right now.");
+      }
+
+      form.reset();
+      setSiteVisitDate(undefined);
+      clearUploadedFiles();
+      setSubmitted(true);
+      setSubmitWarning(payload.warning ?? null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    } catch (error) {
+      setSubmitError(error instanceof Error ? error.message : "Unable to send your enquiry right now.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   // Disable past dates and weekends
@@ -155,6 +199,11 @@ const ContactForm = () => {
               <p className="text-muted-foreground">
                 Your enquiry has been received. We'll be in touch within 24 hours.
               </p>
+              {submitWarning && (
+                <p className="text-sm text-muted-foreground mt-4">
+                  {submitWarning}
+                </p>
+              )}
             </div>
           ) : (
             <Form {...form}>
@@ -296,13 +345,16 @@ const ContactForm = () => {
                       ref={fileInputRef}
                       type="file"
                       multiple
-                      accept=".jpg,.jpeg,.png,.webp,.pdf"
+                      accept={ACCEPTED_UPLOAD_EXTENSIONS.join(",")}
                       onChange={handleFileUpload}
                       className="hidden"
                     />
                   </div>
                   {fileError && (
                     <p className="text-sm text-destructive mt-2">{fileError}</p>
+                  )}
+                  {submitError && (
+                    <p className="text-sm text-destructive mt-2">{submitError}</p>
                   )}
                   {uploadedFiles.length > 0 && (
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-3">
@@ -330,9 +382,22 @@ const ContactForm = () => {
                   )}
                 </div>
 
-                <Button type="submit" className="w-full gradient-gold text-secondary font-display font-semibold tracking-wide uppercase h-12">
-                  <Send size={18} />
-                  Submit Enquiry
+                <Button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full gradient-gold text-secondary font-display font-semibold tracking-wide uppercase h-12"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <LoaderCircle size={18} className="animate-spin" />
+                      Sending Enquiry...
+                    </>
+                  ) : (
+                    <>
+                      <Send size={18} />
+                      Submit Enquiry
+                    </>
+                  )}
                 </Button>
               </form>
             </Form>

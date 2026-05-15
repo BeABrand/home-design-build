@@ -128,3 +128,17 @@ Body font:     Inter (paragraphs, descriptions)
 | Pre-2026 | main | Multiple rebrand iterations (Axis → Build Plan → DraftWorks); all core sections built |
 | 2026-05-11 | chore/remove-lovable-branding | Removed lovable-tagger dep + vite plugin; new DraftWorks favicon.svg/.ico; new blueprint placeholder.svg; updated favicon link in index.html |
 | 2026-05-11 | docs/update-readme-and-session-docs | Rewrote README.md; created documents/SESSION_RECOVERY.md and documents/RESUME_INSTRUCTIONS.md (this file) |
+| 2026-05-15 | fix/enquiry-email-upload-flow | Added enquiry email backend flow with Nodemailer, multipart upload parsing, frontend `FormData` submission, and runtime config for SMTP/public upload URLs |
+
+---
+
+## 2026-05-15 Resume Point
+
+- Active branch for this work: `fix/enquiry-email-upload-flow`
+- The `#enquiry` form no longer logs to console; it now posts to `/.netlify/functions/send-enquiry`
+- Required runtime setup:
+  - Fill SMTP credentials in environment variables from `.env.example`
+  - Confirm whether production has a writable public storage path behind `https://buildplandrafting.com.au/storage`
+- Important deployment note:
+  - On static Netlify hosting, runtime writes into the repo `public/` directory do not automatically become public URLs on the live site
+  - Current fallback is safe: uploaded files are attached to the enquiry email even when public URLs cannot be generated
