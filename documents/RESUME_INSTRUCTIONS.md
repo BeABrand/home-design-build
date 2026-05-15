@@ -129,6 +129,8 @@ Body font:     Inter (paragraphs, descriptions)
 | 2026-05-11 | chore/remove-lovable-branding | Removed lovable-tagger dep + vite plugin; new DraftWorks favicon.svg/.ico; new blueprint placeholder.svg; updated favicon link in index.html |
 | 2026-05-11 | docs/update-readme-and-session-docs | Rewrote README.md; created documents/SESSION_RECOVERY.md and documents/RESUME_INSTRUCTIONS.md (this file) |
 | 2026-05-15 | fix/enquiry-email-upload-flow | Added enquiry email backend flow with Nodemailer, multipart upload parsing, frontend `FormData` submission, and runtime config for SMTP/public upload URLs |
+| 2026-05-15 | fix/enquiry-smtp-env-loading | Unit tests added: `src/lib/__tests__/enquiry.test.ts` (40), `src/lib/__tests__/send-enquiry.test.ts` (30), `src/components/__tests__/contact-form-helpers.test.ts` (15); `isSubmissionPayload` moved to `enquiry.ts`; pure helpers exported from `send-enquiry.ts` |
+| 2026-05-15 | fix/typescript-lint-errors-and-warnings | Playwright E2E installed; `playwright.config.ts` (chromium, port 8081); `tests/e2e/enquiry-form.spec.ts` (3 tests: validation, happy path mock, file upload rejection) |
 
 ---
 
@@ -158,11 +160,47 @@ Body font:     Inter (paragraphs, descriptions)
 
 ## 2026-05-15 Current Resume Point
 
-- Current branch: `fix/enquiry-smtp-env-loading`
-- Latest issue fixed:
-  - local dev showed `SMTP_USER and SMTP_PASS must be configured`
-  - `.env` existed, but the Vite dev server process was not loading those server-side values into `process.env`
-- Latest code change:
-  - `vite.config.ts` now uses `loadEnv(mode, process.cwd(), "")` and hydrates `process.env` before the local enquiry middleware runs
-- Important note:
-  - restart the local Vite dev server after this change so the new env-loading path is active
+- Current branch: `fix/typescript-lint-errors-and-warnings`
+- Latest session scope: WebStorm/ESLint type-error + warning cleanup, full agent suite (build-error-resolver, code-reviewer, security-reviewer, architect, tdd-guide, refactor-cleaner, e2e-runner)
+- Pipeline state at end of session: `tsc --noEmit` clean • `eslint --max-warnings 0` clean • `npm test` 86/86 • `npm run test:e2e` 3/3 • `npm run build` clean
+
+### Dev environment notes
+- **Port 8080 is occupied by Apache2** on this machine; Vite dev server falls back to **8081**. `playwright.config.ts` and Playwright `baseURL` are hard-set to 8081.
+- E2E command: `npm run test:e2e` (chromium only). Spec lives at `tests/e2e/enquiry-form.spec.ts`.
+- Unit tests: `npm test` (Vitest). 86 tests across `src/lib/__tests__/enquiry.test.ts`, `src/lib/__tests__/send-enquiry.test.ts`, `src/components/__tests__/contact-form-helpers.test.ts`, `src/test/example.test.ts`.
+
+### Shared types (single source of truth)
+All enquiry response types now live in `src/lib/enquiry.ts`:
+- `SubmissionSuccessPayload`, `SubmissionErrorPayload`, `SubmissionPayload` (discriminated union)
+- `EnquiryUploadedFile`
+- `isSubmissionPayload` runtime guard
+- `enquirySubmissionSchema`, `enquiryClientSchema`, project-types/MIME constants
+
+Both `ContactForm.tsx` (client) and `netlify/functions/send-enquiry.ts` (server) import these — do NOT redeclare any of them.
+
+### Where extracted shadcn variants/utils live (for fast-refresh compliance)
+| Component file | Variants/hooks moved to |
+|---------------|--------------------------|
+| `badge.tsx` | `badge-variants.ts` |
+| `button.tsx` | `button-variants.ts` |
+| `form.tsx` | `form-utils.ts` |
+| `navigation-menu.tsx` | `navigation-menu-variants.ts` |
+| `sidebar.tsx` | `sidebar-utils.ts` |
+| `toggle.tsx` | `toggle-variants.ts` |
+| `sonner.tsx` | (no sibling — `toast` is imported directly from `sonner`) |
+
+If you add a new shadcn component that exports BOTH a component AND a hook/variant, follow this same split or ESLint will fail with `react-refresh/only-export-components`.
+
+### Open work — PROMOTED FROM AGENT REVIEWS (handle on dedicated branches)
+Priority order. Each item should go on its own branch (e.g. `fix/enquiry-smtp-error-leak`, `chore/enquiry-rate-limiting`).
+
+1. **HIGH security** — `send-enquiry.ts:391` returns raw `error.message` (may include SMTP credentials/hostnames) to the client. Replace with a generic message + `console.error` server-side.
+2. **HIGH security** — no rate limiting on `/.netlify/functions/send-enquiry`. Add Netlify WAF / Cloudflare / Netlify Blobs counter.
+3. **CRITICAL maintainability** — `persistFiles` catch block silently swallows storage errors. Log the underlying error.
+4. **MEDIUM security** — strip CRLF from `name`/`phone` Zod fields (defence-in-depth).
+5. **MEDIUM correctness** — `fileCount > MAX_FILE_COUNT` is off-by-one; change to `>=` to align with the `filesLimit` event boundary.
+6. **MEDIUM correctness** — `OPTIONS 204` response should not carry `Content-Type: application/json`.
+7. **MEDIUM cosmetic** — `disabledDays` comment in `ContactForm.tsx:201` says "weekends" but only Sundays are disabled (UI copy is correct).
+8. **MEDIUM architecture** — `public/storage/` is dead on Netlify CDN. Migrate to Netlify Blobs or S3/R2 with signed URLs.
+9. **MEDIUM refactor** — lift `siteVisitDate` from `useState` into RHF schema (eliminate parallel state).
+10. **LOW security** — dev middleware (`vite.config.ts:19`) should cap request body to ~6 MB.

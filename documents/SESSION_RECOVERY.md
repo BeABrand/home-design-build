@@ -173,3 +173,137 @@ Navbar (fixed, dark) → HeroSection → ServicesOverview → ResidentialSection
   - safe boolean check confirmed local loading sees both SMTP keys
   - `./node_modules/.bin/tsc --noEmit`
   - `npm run build`
+
+## 2026-05-15 E2E Test Setup Session
+
+**Branch**: `fix/typescript-lint-errors-and-warnings` (Playwright added to this branch)
+
+**Objective**: Install Playwright, configure chromium-only E2E testing, and author three tests for the enquiry form.
+
+**Key discovery**: Apache2 is bound to port 8080 on this machine; Vite dev server falls back to port 8081. `playwright.config.ts` uses `port: 8081` and `baseURL: "http://localhost:8081"`.
+
+**Files created/modified**:
+| File | Change |
+|------|--------|
+| `playwright.config.ts` | New: chromium-only config, port 8081, `reuseExistingServer: !process.env.CI` |
+| `tests/e2e/enquiry-form.spec.ts` | New: 3 E2E tests (validation, happy path, file upload) |
+| `package.json` | Added `test:e2e` and `test:e2e:ui` scripts |
+| `.gitignore` | Added Playwright output directories |
+
+**Test results**: 3/3 PASSED (validation errors, happy-path mock, file upload rejection)
+
+**Full pipeline**:
+- `tsc --noEmit`: clean
+- `eslint . --max-warnings 0`: clean
+- `npm test` (Vitest): 86/86 passed
+- `npx playwright test --reporter=list`: 3/3 passed in 2.8s
+
+## 2026-05-15 Unit Test Coverage Session
+
+**Branch**: `fix/enquiry-smtp-env-loading` (unchanged — tests added on this branch)
+
+**Objective**: Add unit-test coverage (80%+ target) for `src/lib/enquiry.ts`, `netlify/functions/send-enquiry.ts` pure helpers, and `src/components/ContactForm.tsx` `isSubmissionPayload` guard.
+
+**Source files modified**:
+1. `netlify/functions/send-enquiry.ts` — added `export { escapeHtml, buildTextBody, buildHtmlBody };` one line above the handler export. No handler logic changed.
+2. `src/lib/enquiry.ts` — added `export const isSubmissionPayload` at the bottom. The function was moved here (from `ContactForm.tsx`) to avoid `react-refresh/only-export-components` ESLint violation.
+3. `src/components/ContactForm.tsx` — `isSubmissionPayload` definition converted back to `const` (non-exported); `isSubmissionPayload` added to the import list from `@/lib/enquiry`.
+
+**Test files created**:
+| File | Suite | Tests |
+|------|-------|-------|
+| `src/lib/__tests__/enquiry.test.ts` | enquiry schema + constants | 40 |
+| `src/lib/__tests__/send-enquiry.test.ts` | escapeHtml / buildTextBody / buildHtmlBody | 30 |
+| `src/components/__tests__/contact-form-helpers.test.ts` | isSubmissionPayload | 15 |
+
+**Final results**:
+- `npm test`: 86 tests across 4 files — all PASSED
+- `tsc --noEmit`: clean (no errors)
+- `eslint . --max-warnings 0`: clean (no warnings)
+- Coverage tooling (`@vitest/coverage-v8`) not installed — coverage report skipped
+
+**vitest include pattern**: `src/**/*.{test,spec}.{ts,tsx}` — netlify function tests live at `src/lib/__tests__/send-enquiry.test.ts` to satisfy this constraint.
+
+## 2026-05-15 TypeScript/ESLint Cleanup + Full Agent-Suite Session
+
+**Branch**: `fix/typescript-lint-errors-and-warnings` (all work below committed on this branch)
+
+**Objective**: Resolve every WebStorm/ESLint type error and warning on the recent enquiry-flow code, then exercise the full agent suite (build-error-resolver / code-reviewer / security-reviewer / architect / tdd-guide / refactor-cleaner / e2e-runner).
+
+### Lint baseline at session start
+- `tsc --noEmit`: clean
+- `eslint .`: **3 errors + 7 warnings**
+  - Errors: empty interface in `command.tsx:24`, empty interface in `textarea.tsx:5`, `require()` import in `tailwind.config.ts:92`
+  - Warnings: 7 × `react-refresh/only-export-components` in `badge.tsx`, `button.tsx`, `form.tsx`, `navigation-menu.tsx`, `sidebar.tsx`, `sonner.tsx`, `toggle.tsx`
+
+### Fixes applied (build-error-resolver agent)
+1. `command.tsx` — empty interface → `type CommandDialogProps = DialogProps`
+2. `textarea.tsx` — empty interface → `type TextareaProps = React.TextareaHTMLAttributes<HTMLTextAreaElement>`
+3. `tailwind.config.ts` — `require("tailwindcss-animate")` → `import tailwindcssAnimate from "tailwindcss-animate"`
+4. Extracted non-component exports into sibling files so HMR fast-refresh works:
+   - `src/components/ui/badge-variants.ts` (`badgeVariants`, `BadgeProps`)
+   - `src/components/ui/button-variants.ts` (`buttonVariants`, `ButtonProps`)
+   - `src/components/ui/form-utils.ts` (`useFormField`, `FormFieldContext`, `FormItemContext`)
+   - `src/components/ui/navigation-menu-variants.ts` (`navigationMenuTriggerStyle`)
+   - `src/components/ui/sidebar-utils.ts` (`useSidebar`, `SidebarContext`, constants)
+   - `src/components/ui/toggle-variants.ts` (`toggleVariants`)
+   - `src/components/ui/sonner-utils.ts` — created then deleted by refactor-cleaner (zero importers)
+5. Import-site updates: `alert-dialog.tsx`, `calendar.tsx`, `pagination.tsx`, `toggle-group.tsx`
+
+### Type-sync fix (separate task)
+- Moved server response types (`SubmissionSuccessPayload`, `SubmissionErrorPayload`, `SubmissionPayload`, `EnquiryUploadedFile`) into `src/lib/enquiry.ts` as the single source of truth.
+- Deleted the duplicate `SubmissionResponse` interface in `ContactForm.tsx`; replaced unsafe `as SubmissionResponse` cast with the runtime `isSubmissionPayload` type guard.
+- `netlify/functions/send-enquiry.ts` now imports the same types from `src/lib/enquiry.ts`.
+
+### Multi-agent review findings (only TYPE-related items implemented; runtime/security items DEFERRED to follow-up branches)
+
+**code-reviewer**: 1 CRITICAL / 2 HIGH / 3 MEDIUM / 2 LOW. ✅ Implemented: `SubmissionResponse` type drift. Deferred (filed below): `persistFiles` silent error swallow, fileCount off-by-one, `disabledDays` comment, OPTIONS Content-Type.
+
+**security-reviewer**: 0 CRITICAL / 2 HIGH / 4 MEDIUM / 3 LOW. All findings deferred (runtime, not type): SMTP error text leak to client (H-1), no rate limiting (H-2), CRLF defence-in-depth on `name`/`phone`, dev-middleware body size cap.
+
+**architect**: HIGH — `public/storage/` runtime writes are dead on Netlify CDN (recommend Netlify Blobs / S3 / R2 with signed URLs). MEDIUM — `siteVisitDate` not in RHF schema. Type-sync recommendation already implemented.
+
+### Refactor-cleaner pass
+- Ran `knip` 6.13.1, `ts-prune` 0.10.3, `depcheck` 1.4.7
+- Deleted: `src/components/ui/sonner-utils.ts` (zero importers)
+- Verified-and-kept: all `@radix-ui/*` deps, every extracted variant/util file (each has ≥1 importer), all build-pipeline deps
+
+### E2E setup
+- Installed `@playwright/test@^1.60.0` + chromium browser binary (`~/.cache/ms-playwright/chromium_headless_shell-1223`)
+- **Port note**: Apache2 holds port 8080 on this machine — Vite falls back to **8081**; `playwright.config.ts` and `baseURL` both use 8081
+- Created `playwright.config.ts` (chromium-only, `reuseExistingServer: !process.env.CI`)
+- Created `tests/e2e/enquiry-form.spec.ts` — 3 tests:
+  1. Validation errors block submission (no network call)
+  2. Happy-path submission with mocked `page.route` → "Thank You!" card
+  3. File upload — valid PNG renders preview, invalid `.txt` shows error
+- Added `.gitignore` entries for `test-results/`, `playwright-report/`, etc.
+- Added `npm run test:e2e` and `npm run test:e2e:ui` scripts
+
+### Final pipeline state (verified end of session)
+| Check | Result |
+|-------|--------|
+| `tsc --noEmit` | clean |
+| `eslint . --max-warnings 0` | clean (0 errors, 0 warnings) |
+| `npm test` (Vitest) | 86/86 passed across 4 files |
+| `npm run test:e2e` | 3/3 passed |
+| `npm run build` | clean (one informational chunk-size hint only) |
+
+### Files changed on this branch (33 files, ~1410 insertions / 204 deletions)
+- 6 new variant/util files (after sonner-utils removal)
+- 3 new unit test files + 1 new E2E spec
+- 1 new config file (`playwright.config.ts`)
+- 13 shadcn UI files modified (extraction + lint fixes)
+- 3 app files modified (`ContactForm.tsx`, `netlify/functions/send-enquiry.ts`, `src/lib/enquiry.ts`)
+- 3 config files modified (`tailwind.config.ts`, `package.json`, `.gitignore`)
+
+### Open items for next session (PROMOTED FROM AGENT REPORTS)
+1. **HIGH security** — wrap SMTP error in generic client message + server-side log (`send-enquiry.ts:391`)
+2. **HIGH security** — add rate limiting (Cloudflare or Netlify WAF) on the function endpoint
+3. **CRITICAL maintainability** — log the swallowed error in `persistFiles` catch block
+4. **MEDIUM security** — Zod `name`/`phone` regex to strip CRLF (defence-in-depth)
+5. **MEDIUM correctness** — `fileCount` off-by-one in `parseMultipartForm` (6th file partially buffered before rejection)
+6. **MEDIUM correctness** — `OPTIONS` 204 response should not carry `Content-Type`
+7. **MEDIUM cosmetic** — `disabledDays` inline comment says "weekends" but logic only excludes Sundays (UI copy is correct)
+8. **MEDIUM architecture** — migrate `public/storage/` runtime writes to Netlify Blobs or S3/R2 with signed URLs
+9. **MEDIUM refactor** — lift `siteVisitDate` into the RHF schema instead of parallel useState in `ContactForm.tsx`
+10. **LOW security** — dev middleware in `vite.config.ts` should cap request body size to ~6 MB

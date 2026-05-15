@@ -24,8 +24,10 @@ import {
   MAX_FILE_COUNT,
   MAX_FILE_SIZE,
   enquiryClientSchema,
+  isSubmissionPayload,
   projectTypes,
   type EnquiryFormValues,
+  type SubmissionPayload,
 } from "@/lib/enquiry";
 
 interface UploadedFile {
@@ -33,22 +35,24 @@ interface UploadedFile {
   preview: string | null;
 }
 
-interface SubmissionResponse {
-  ok: boolean;
-  error?: string;
-  warning?: string;
-}
-
 const ENQUIRY_ENDPOINT =
   import.meta.env.VITE_ENQUIRY_ENDPOINT?.trim() || "/.netlify/functions/send-enquiry";
 
-const parseSubmissionResponse = async (response: Response): Promise<SubmissionResponse> => {
+const isSubmissionPayload = (value: unknown): value is SubmissionPayload => {
+  if (typeof value !== "object" || value === null) {
+    return false;
+  }
+  const candidate = value as { ok?: unknown };
+  return typeof candidate.ok === "boolean";
+};
+
+const parseSubmissionResponse = async (response: Response): Promise<SubmissionPayload> => {
   const responseText = await response.text();
   const contentType = response.headers.get("content-type") || "";
 
   if (!responseText.trim()) {
     if (response.ok) {
-      return { ok: true };
+      return { ok: true, uploadedFiles: [] };
     }
 
     if (response.status === 404) {
@@ -66,7 +70,14 @@ const parseSubmissionResponse = async (response: Response): Promise<SubmissionRe
 
   if (contentType.includes("application/json")) {
     try {
-      return JSON.parse(responseText) as SubmissionResponse;
+      const parsed: unknown = JSON.parse(responseText);
+      if (isSubmissionPayload(parsed)) {
+        return parsed;
+      }
+      return {
+        ok: false,
+        error: "The enquiry endpoint returned an unexpected response shape.",
+      };
     } catch {
       return {
         ok: false,
@@ -82,10 +93,9 @@ const parseSubmissionResponse = async (response: Response): Promise<SubmissionRe
     };
   }
 
-  return {
-    ok: response.ok,
-    error: response.ok ? undefined : responseText,
-  };
+  return response.ok
+    ? { ok: true, uploadedFiles: [] }
+    : { ok: false, error: responseText };
 };
 
 const ContactForm = () => {
