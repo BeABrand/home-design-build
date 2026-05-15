@@ -42,6 +42,52 @@ interface SubmissionResponse {
 const ENQUIRY_ENDPOINT =
   import.meta.env.VITE_ENQUIRY_ENDPOINT?.trim() || "/.netlify/functions/send-enquiry";
 
+const parseSubmissionResponse = async (response: Response): Promise<SubmissionResponse> => {
+  const responseText = await response.text();
+  const contentType = response.headers.get("content-type") || "";
+
+  if (!responseText.trim()) {
+    if (response.ok) {
+      return { ok: true };
+    }
+
+    if (response.status === 404) {
+      return {
+        ok: false,
+        error: "The enquiry endpoint is not available in the current environment.",
+      };
+    }
+
+    return {
+      ok: false,
+      error: "The enquiry request failed without a response body.",
+    };
+  }
+
+  if (contentType.includes("application/json")) {
+    try {
+      return JSON.parse(responseText) as SubmissionResponse;
+    } catch {
+      return {
+        ok: false,
+        error: "The enquiry endpoint returned invalid JSON.",
+      };
+    }
+  }
+
+  if (!response.ok && response.status === 404) {
+    return {
+      ok: false,
+      error: "The enquiry endpoint is not available in the current environment.",
+    };
+  }
+
+  return {
+    ok: response.ok,
+    error: response.ok ? undefined : responseText,
+  };
+};
+
 const ContactForm = () => {
   const [submitted, setSubmitted] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
@@ -130,7 +176,7 @@ const ContactForm = () => {
         method: "POST",
         body: formData,
       });
-      const payload = (await response.json()) as SubmissionResponse;
+      const payload = await parseSubmissionResponse(response);
 
       if (!response.ok || !payload.ok) {
         throw new Error(payload.error || "Unable to send your enquiry right now.");

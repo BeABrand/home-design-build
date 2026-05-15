@@ -142,3 +142,18 @@ Navbar (fixed, dark) → HeroSection → ServicesOverview → ResidentialSection
   - Zoho mail DNS records in screenshots look aligned.
   - Static Netlify hosting does not expose runtime-written files in the repo `public/` directory as live public assets.
   - Current implementation sends uploaded files as email attachments and only emits public file URLs when the configured storage path is both writable and actually served publicly.
+
+## 2026-05-15 Response Error Follow-Up
+
+- User reported browser error from screenshots: `Failed to execute 'json' on 'Response': Unexpected end of JSON input`
+- Root cause confirmed from screenshots and code:
+  - the form POST was returning `404` in local Vite dev
+  - `ContactForm.tsx` was always calling `response.json()`
+  - the failing endpoint response was empty or non-JSON, which caused the browser-side JSON parse exception
+- Follow-up branch created from the current fix branch: `fix/enquiry-response-json-handling`
+- Fix applied:
+  - added defensive response parsing in `src/components/ContactForm.tsx`
+  - added local Vite middleware in `vite.config.ts` so `/.netlify/functions/send-enquiry` is available during local dev as well
+- Result:
+  - local submission no longer depends on a missing endpoint path
+  - non-JSON or empty responses no longer crash the browser with a JSON parsing exception

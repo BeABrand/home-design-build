@@ -142,3 +142,16 @@ Body font:     Inter (paragraphs, descriptions)
 - Important deployment note:
   - On static Netlify hosting, runtime writes into the repo `public/` directory do not automatically become public URLs on the live site
   - Current fallback is safe: uploaded files are attached to the enquiry email even when public URLs cannot be generated
+
+## 2026-05-15 Latest Resume Point
+
+- Current branch after the follow-up fix: `fix/enquiry-response-json-handling`
+- Latest issue fixed:
+  - local testing in Vite returned `404` for the enquiry endpoint
+  - the frontend then failed on `response.json()` with `Unexpected end of JSON input`
+- Latest code changes:
+  - `src/components/ContactForm.tsx`: defensive response parsing for empty/non-JSON error responses
+  - `vite.config.ts`: local dev middleware exposing the enquiry handler at `/.netlify/functions/send-enquiry`
+- Validation completed:
+  - `./node_modules/.bin/tsc --noEmit`
+  - `npm run build`
