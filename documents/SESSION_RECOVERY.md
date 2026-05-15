@@ -173,3 +173,29 @@ Navbar (fixed, dark) → HeroSection → ServicesOverview → ResidentialSection
   - safe boolean check confirmed local loading sees both SMTP keys
   - `./node_modules/.bin/tsc --noEmit`
   - `npm run build`
+
+## 2026-05-15 Unit Test Coverage Session
+
+**Branch**: `fix/enquiry-smtp-env-loading` (unchanged — tests added on this branch)
+
+**Objective**: Add unit-test coverage (80%+ target) for `src/lib/enquiry.ts`, `netlify/functions/send-enquiry.ts` pure helpers, and `src/components/ContactForm.tsx` `isSubmissionPayload` guard.
+
+**Source files modified**:
+1. `netlify/functions/send-enquiry.ts` — added `export { escapeHtml, buildTextBody, buildHtmlBody };` one line above the handler export. No handler logic changed.
+2. `src/lib/enquiry.ts` — added `export const isSubmissionPayload` at the bottom. The function was moved here (from `ContactForm.tsx`) to avoid `react-refresh/only-export-components` ESLint violation.
+3. `src/components/ContactForm.tsx` — `isSubmissionPayload` definition converted back to `const` (non-exported); `isSubmissionPayload` added to the import list from `@/lib/enquiry`.
+
+**Test files created**:
+| File | Suite | Tests |
+|------|-------|-------|
+| `src/lib/__tests__/enquiry.test.ts` | enquiry schema + constants | 40 |
+| `src/lib/__tests__/send-enquiry.test.ts` | escapeHtml / buildTextBody / buildHtmlBody | 30 |
+| `src/components/__tests__/contact-form-helpers.test.ts` | isSubmissionPayload | 15 |
+
+**Final results**:
+- `npm test`: 86 tests across 4 files — all PASSED
+- `tsc --noEmit`: clean (no errors)
+- `eslint . --max-warnings 0`: clean (no warnings)
+- Coverage tooling (`@vitest/coverage-v8`) not installed — coverage report skipped
+
+**vitest include pattern**: `src/**/*.{test,spec}.{ts,tsx}` — netlify function tests live at `src/lib/__tests__/send-enquiry.test.ts` to satisfy this constraint.

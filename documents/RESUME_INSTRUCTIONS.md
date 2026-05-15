@@ -129,6 +129,7 @@ Body font:     Inter (paragraphs, descriptions)
 | 2026-05-11 | chore/remove-lovable-branding | Removed lovable-tagger dep + vite plugin; new DraftWorks favicon.svg/.ico; new blueprint placeholder.svg; updated favicon link in index.html |
 | 2026-05-11 | docs/update-readme-and-session-docs | Rewrote README.md; created documents/SESSION_RECOVERY.md and documents/RESUME_INSTRUCTIONS.md (this file) |
 | 2026-05-15 | fix/enquiry-email-upload-flow | Added enquiry email backend flow with Nodemailer, multipart upload parsing, frontend `FormData` submission, and runtime config for SMTP/public upload URLs |
+| 2026-05-15 | fix/enquiry-smtp-env-loading | Unit tests added: `src/lib/__tests__/enquiry.test.ts` (40), `src/lib/__tests__/send-enquiry.test.ts` (30), `src/components/__tests__/contact-form-helpers.test.ts` (15); `isSubmissionPayload` moved to `enquiry.ts`; pure helpers exported from `send-enquiry.ts` |
 
 ---
 

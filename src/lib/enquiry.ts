@@ -44,3 +44,29 @@ export const enquiryClientSchema = enquirySubmissionSchema.omit({ siteVisitDate:
 
 export type EnquirySubmission = z.infer<typeof enquirySubmissionSchema>;
 export type EnquiryFormValues = z.infer<typeof enquiryClientSchema>;
+
+export interface EnquiryUploadedFile {
+  originalName: string;
+  publicUrl: string | null;
+}
+
+export interface SubmissionSuccessPayload {
+  ok: true;
+  warning?: string;
+  uploadedFiles: EnquiryUploadedFile[];
+}
+
+export interface SubmissionErrorPayload {
+  ok: false;
+  error: string;
+}
+
+export type SubmissionPayload = SubmissionSuccessPayload | SubmissionErrorPayload;
+
+export const isSubmissionPayload = (value: unknown): value is SubmissionPayload => {
+  if (typeof value !== "object" || value === null) {
+    return false;
+  }
+  const candidate = value as { ok?: unknown };
+  return typeof candidate.ok === "boolean";
+};

@@ -11,6 +11,8 @@ import {
   MAX_FILE_SIZE,
   enquirySubmissionSchema,
   type EnquirySubmission,
+  type SubmissionSuccessPayload,
+  type SubmissionErrorPayload,
 } from "../../src/lib/enquiry";
 
 interface NetlifyEvent {
@@ -39,17 +41,6 @@ interface StoredUploadFile {
   publicUrl: string | null;
   mimeType: string;
   buffer: Buffer;
-}
-
-interface SubmissionSuccessPayload {
-  ok: true;
-  warning?: string;
-  uploadedFiles: Array<{ originalName: string; publicUrl: string | null }>;
-}
-
-interface SubmissionErrorPayload {
-  ok: false;
-  error: string;
 }
 
 const JSON_HEADERS = {
@@ -329,6 +320,8 @@ const buildHtmlBody = (submission: EnquirySubmission, storedFiles: StoredUploadF
     ${uploadedFilesMarkup}
   `;
 };
+
+export { escapeHtml, buildTextBody, buildHtmlBody };
 
 export const handler = async (event: NetlifyEvent): Promise<NetlifyResponse> => {
   if (event.httpMethod === "OPTIONS") {
