@@ -157,3 +157,19 @@ Navbar (fixed, dark) → HeroSection → ServicesOverview → ResidentialSection
 - Result:
   - local submission no longer depends on a missing endpoint path
   - non-JSON or empty responses no longer crash the browser with a JSON parsing exception
+
+## 2026-05-15 SMTP Environment Follow-Up
+
+- User reported new screenshot error: `SMTP_USER and SMTP_PASS must be configured.`
+- Root cause confirmed:
+  - `.env` exists locally and contains both `SMTP_USER` and `SMTP_PASS`
+  - the local enquiry handler runs inside the Vite dev server process
+  - `vite.config.ts` was not loading `.env` values into `process.env` for that server-side middleware path
+- Follow-up branch created from the previous fix branch: `fix/enquiry-smtp-env-loading`
+- Fix applied:
+  - added `loadEnv` usage in `vite.config.ts`
+  - merged loaded server env values into `process.env` without overriding already-exported shell envs
+- Validation:
+  - safe boolean check confirmed local loading sees both SMTP keys
+  - `./node_modules/.bin/tsc --noEmit`
+  - `npm run build`

@@ -1,10 +1,20 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { defineConfig } from "vite";
+import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { handler as enquiryHandler } from "./netlify/functions/send-enquiry";
 
 const ENQUIRY_ENDPOINT_PATH = "/.netlify/functions/send-enquiry";
+
+const loadServerEnvironment = (mode: string) => {
+  const loadedEnvironment = loadEnv(mode, process.cwd(), "");
+
+  Object.entries(loadedEnvironment).forEach(([key, value]) => {
+    if (process.env[key] === undefined) {
+      process.env[key] = value;
+    }
+  });
+};
 
 const readRequestBody = async (request: IncomingMessage) => {
   const chunks: Buffer[] = [];
@@ -78,18 +88,22 @@ const enquiryDevMiddleware = () => ({
 });
 
 // https://vitejs.dev/config/
-export default defineConfig(() => ({
-  server: {
-    host: "::",
-    port: 8080,
-    hmr: {
-      overlay: false,
+export default defineConfig(({ mode }) => {
+  loadServerEnvironment(mode);
+
+  return {
+    server: {
+      host: "::",
+      port: 8080,
+      hmr: {
+        overlay: false,
+      },
     },
-  },
-  plugins: [react(), enquiryDevMiddleware()],
-  resolve: {
-    alias: {
-      "@": path.resolve(__dirname, "./src"),
+    plugins: [react(), enquiryDevMiddleware()],
+    resolve: {
+      alias: {
+        "@": path.resolve(__dirname, "./src"),
+      },
     },
-  },
-}));
+  };
+});
