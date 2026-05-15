@@ -155,3 +155,14 @@ Body font:     Inter (paragraphs, descriptions)
 - Validation completed:
   - `./node_modules/.bin/tsc --noEmit`
   - `npm run build`
+
+## 2026-05-15 Current Resume Point
+
+- Current branch: `fix/enquiry-smtp-env-loading`
+- Latest issue fixed:
+  - local dev showed `SMTP_USER and SMTP_PASS must be configured`
+  - `.env` existed, but the Vite dev server process was not loading those server-side values into `process.env`
+- Latest code change:
+  - `vite.config.ts` now uses `loadEnv(mode, process.cwd(), "")` and hydrates `process.env` before the local enquiry middleware runs
+- Important note:
+  - restart the local Vite dev server after this change so the new env-loading path is active
