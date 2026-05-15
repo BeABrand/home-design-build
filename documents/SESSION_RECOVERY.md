@@ -398,3 +398,61 @@ The second test proves the AU host is the right region (the connection succeeded
 ### Open items rolled forward
 
 The architect's H-2 (no rate limiting on the function endpoint) is still open — needs Cloudflare or Netlify WAF, infrastructure-level work outside this branch's scope.
+
+## 2026-05-15 README + Docs Rebrand Session
+
+**Branch**: `docs/rebrand-buildplanandrafting-readme` (created from `fix/enquiry-zoho-smtp-authentication`)
+
+**Objective**: README.md still described the project as "DraftWorks Australia" (the second of three historical rebrand iterations). The live business name is **Build Plan & Drafting** with domain `buildplanandrafting.com.au` — confirmed by reading `index.html`, `src/components/Navbar.tsx:21`, `src/components/Footer.tsx:23`, `src/components/HeroSection.tsx:25`, `src/components/ContactCTA.tsx:32`. The README needed to be brought into sync.
+
+### Authoritative brand facts (verified against the codebase)
+
+| Field | Value | Source |
+|-------|-------|--------|
+| Business name | Build Plan & Drafting | `Navbar.tsx`, `Footer.tsx`, `HeroSection.tsx`, `index.html` schema.org |
+| Domain | `buildplanandrafting.com.au` | `ContactCTA.tsx:32` mailto, `.env`, error classifier `clientMessage` |
+| Email | `info@buildplanandrafting.com.au` | `ContactCTA.tsx:37`, `.env` SMTP_USER + ENQUIRY_TO_EMAIL |
+| Phone | `+61 480 024 017` | `ContactCTA.tsx:40,45` |
+| Mailbox host | Zoho Workspace, AU region | per Zoho diagnostic session |
+
+### README.md changes
+
+Replaced the prior "DraftWorks Australia" boilerplate with accurate content covering:
+- Business identity table with domain/email/phone/region
+- Tech stack (now includes Netlify Functions + Zoho integration + Playwright)
+- File tree showing `netlify/functions/`, `scripts/`, `tests/e2e/`, `documents/`, and `src/lib/__tests__/`
+- Updated page section map (added FAQSection which now sits between ContactForm and ContactCTA — see `src/pages/Index.tsx:28`)
+- Local dev / build / verify commands using `tsc --build` (NOT `tsc --noEmit`)
+- Backend enquiry flow: full Nodemailer/Zoho SMTP description with the regional-host requirement
+- Required environment variables table with the app-specific-password rule
+- `npm run diagnose:smtp` documentation
+- Open items section flagging:
+  - HIGH ops: Netlify env vars must be updated (SMTP_HOST and SMTP_PASS)
+  - HIGH security: rate limiting still missing
+  - MEDIUM rebrand leftovers (see below)
+
+### Stale "DraftWorks" references intentionally LEFT IN CODE this session
+
+The user scoped this session to "update README.md... and session/resume docs", so the following code locations were flagged in the README's Open Items but NOT modified:
+
+1. `index.html:10` — `<link rel="canonical" href="https://draftworks.com.au" />` (should be `buildplanandrafting.com.au`)
+2. `public/placeholder.svg` — embedded "DRAFTWORKS" wordmark and `draftworks.com.au` text at the bottom
+3. `public/favicon.svg` / `public/favicon.ico` — contain a "DW" monogram from the earlier branding
+
+These should be fixed in a dedicated `chore/rebrand-static-assets` branch.
+
+### Documents updated
+
+- `README.md` — full rewrite as above
+- `documents/SESSION_RECOVERY.md` — this entry
+- `documents/RESUME_INSTRUCTIONS.md` — appended a new resume point with the authoritative brand facts + canonical URL caveat
+
+### Pipeline state
+
+No code changed in this session. Pipeline state is unchanged from the prior commit:
+| Check | Result |
+|-------|--------|
+| `tsc --build` | clean |
+| `eslint . --max-warnings 0` | clean |
+| `npm test` | 101/101 |
+| `npm run diagnose:smtp` | reports actionable diagnosis |

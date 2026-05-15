@@ -252,3 +252,46 @@ Determine your region by logging into Zoho web mail and reading the URL: `mail.z
 
 - **HIGH security** — H-2 from prior session: no rate limiting on `/.netlify/functions/send-enquiry`. Requires Cloudflare or Netlify WAF (infrastructure, not code).
 - All other previously deferred items (CRITICAL `persistFiles` log, MEDIUM CRLF, OPTIONS Content-Type, fileCount off-by-one, public/storage architecture, `siteVisitDate` RHF lift, dev middleware body cap) remain open.
+
+## 2026-05-15 README + Docs Rebrand Resume Point
+
+- **Current branch**: `docs/rebrand-buildplanandrafting-readme`
+- **What was done**: rewrote `README.md` to remove the stale "DraftWorks Australia" branding and reflect the actual live business **Build Plan & Drafting**. Updated session docs with this entry. No code changes — pure documentation.
+
+### Authoritative brand identity (use these — do NOT call this project "DraftWorks")
+
+| Field | Value |
+|-------|-------|
+| Business name | Build Plan & Drafting |
+| Domain | `buildplanandrafting.com.au` |
+| Email | `info@buildplanandrafting.com.au` |
+| Phone | `+61 480 024 017` |
+| Region | Australia-wide service; mailbox on Zoho Workspace AU (`smtppro.zoho.com.au`) |
+
+### Service offering (from `src/lib/enquiry.ts` `projectTypes`)
+
+DA / CDC Drawings · Architectural Drafting · Construction Documentation · Revit & BIM · Shop Drawings · Estimation & Planning · Small Drafting · Other
+
+### Page composition (current order — confirmed against `src/pages/Index.tsx`)
+
+`Navbar → HeroSection → ServicesOverview → ResidentialSection → StructuralSection → ProjectTypes → DeliverablesSection → PortfolioGallery → Testimonials → ContactForm → FAQSection → ContactCTA → Footer`
+
+Note that `FAQSection` was reinstated and sits between `ContactForm` and `ContactCTA`.
+
+### Stale "DraftWorks" references — flagged but NOT modified this session
+
+These should be cleaned up in a dedicated branch `chore/rebrand-static-assets`:
+
+1. `index.html:10` — `<link rel="canonical" href="https://draftworks.com.au" />` — needs to become `https://buildplanandrafting.com.au`
+2. `public/placeholder.svg` — embedded "DRAFTWORKS" wordmark + `draftworks.com.au` URL text
+3. `public/favicon.svg` and `public/favicon.ico` — both contain a "DW" monogram from the earlier brand
+
+These were deliberately left in place to respect the session's documentation-only scope. A future agent should not change them on a docs branch.
+
+### Pipeline state at end of session
+
+No code changed. Verified earlier in the session:
+- `tsc --build` clean
+- `eslint . --max-warnings 0` clean
+- `npm test` — 101/101 passed
+- `npm run diagnose:smtp` — produces actionable diagnosis
