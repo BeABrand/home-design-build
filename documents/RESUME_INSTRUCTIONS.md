@@ -217,3 +217,38 @@ Priority order. Each item should go on its own branch (e.g. `fix/enquiry-smtp-er
 - **Discriminated union narrowing**: when checking the response, split `!response.ok` and `!payload.ok` into separate `if` blocks rather than combining with `||`, so TS can narrow `payload` properly.
 - **`.gitignore`**: `*.tsbuildinfo` is ignored — these are project-references build caches and should never be committed.
 - **`@types/nodemailer`** is in devDependencies — required because `tsconfig.netlify.json` now type-checks the Netlify function which imports nodemailer.
+
+## 2026-05-15 Zoho SMTP 535 Resume Point
+
+- **Current branch**: `fix/enquiry-zoho-smtp-authentication`
+- **Form submission status**: STILL BROKEN in production until the user updates Netlify env vars. The code fix is in place; the **runtime credentials are wrong**.
+
+### Required operator actions (NOT code — environment only)
+
+1. Change `SMTP_HOST` in **Netlify env panel** from `smtppro.zoho.com` → `smtppro.zoho.com.au`
+2. Generate an app-specific password at `https://accounts.zoho.com.au/home#security/app_passwords`
+3. Set `SMTP_PASS` in **Netlify env panel** to that generated password (NOT the login password)
+4. Redeploy the function
+
+### Diagnostic tooling
+
+- `npm run diagnose:smtp` — runs `scripts/test-zoho-smtp.ts` which loads `.env`, runs `transporter.verify()`, and on failure prints `error.code`, `responseCode`, `response`, and a categorised diagnosis (wrong-region / app-password-required / smtp-disabled-or-from-mismatch / network / unknown)
+- Override `.env` for one-off tests: `SMTP_HOST=smtppro.zoho.com.au SMTP_PASS=newpwd npm run diagnose:smtp`
+- The same `classifyZohoSmtpError` helper now runs inside `send-enquiry.ts`, so production SMTP failures will be logged with actionable diagnosis at `console.error("[send-enquiry] SMTP failure:", ...)` in Netlify function logs
+
+### Zoho regional SMTP hosts cheat-sheet
+
+| Region | Free | Workspace (paid, custom domain) |
+|--------|------|--------------------------------|
+| US | `smtp.zoho.com` | `smtppro.zoho.com` |
+| EU | `smtp.zoho.eu` | `smtppro.zoho.eu` |
+| **AU** (this project) | `smtp.zoho.com.au` | **`smtppro.zoho.com.au`** |
+| India | `smtp.zoho.in` | `smtppro.zoho.in` |
+| China | `smtp.zoho.com.cn` | `smtppro.zoho.com.cn` |
+
+Determine your region by logging into Zoho web mail and reading the URL: `mail.zoho.<region>`.
+
+### Open items rolled forward
+
+- **HIGH security** — H-2 from prior session: no rate limiting on `/.netlify/functions/send-enquiry`. Requires Cloudflare or Netlify WAF (infrastructure, not code).
+- All other previously deferred items (CRITICAL `persistFiles` log, MEDIUM CRLF, OPTIONS Content-Type, fileCount off-by-one, public/storage architecture, `siteVisitDate` RHF lift, dev middleware body cap) remain open.

@@ -343,3 +343,58 @@ Navbar (fixed, dark) → HeroSection → ServicesOverview → ResidentialSection
 | `npm run build` | clean |
 
 **Key takeaway for next session**: always use `tsc --build` (project-references aware), NOT `tsc --noEmit`, to verify the full codebase including the Netlify functions folder.
+
+## 2026-05-15 Zoho SMTP 535 Root-Cause Diagnosis Session
+
+**Branch**: `fix/enquiry-zoho-smtp-authentication`
+
+**Symptom**: `Request a Free Quote` form returned `Invalid login: 535 Authentication Failed` from Zoho on every submit. User confirmed credentials worked in the Zoho web UI.
+
+### DEFINITIVE ROOT CAUSE — two issues at once
+
+The new `scripts/test-zoho-smtp.ts` diagnostic CLI was run against the live `.env` and confirmed BOTH:
+
+| Test | Result |
+|------|--------|
+| `SMTP_HOST=smtppro.zoho.com` (current) → Zoho returns | **EAUTH / 535** — Cause 1: WRONG REGIONAL SMTP HOST. AU mailbox cannot authenticate against US server. |
+| `SMTP_HOST=smtppro.zoho.com.au` (correct region) → Zoho returns | **EAUTH / 535** — Cause 2: APP-SPECIFIC PASSWORD REQUIRED. AU server accepted the connection but rejected the login password. |
+
+The second test proves the AU host is the right region (the connection succeeded — only the credential was rejected). It also proves the current `SMTP_PASS` is the regular login password, not an app-specific password.
+
+### Required user actions (BLOCKER — cannot be done by Claude)
+
+1. **In Netlify environment variables**, change `SMTP_HOST` from `smtppro.zoho.com` to `smtppro.zoho.com.au`.
+2. **Generate an app-specific password** at `https://accounts.zoho.com.au/home#security/app_passwords` → label it "Netlify SMTP" → copy the one-shot password.
+3. **In Netlify environment variables**, set `SMTP_PASS` to that generated app password (NOT the regular login password).
+4. Redeploy the function. The form should now send successfully.
+
+### Code deliverables (all committed)
+
+| File | Change |
+|------|--------|
+| `scripts/test-zoho-smtp.ts` | NEW — Node CLI: loads `.env` (or `process.env` overrides), runs `transporter.verify()` then sends a test email; uses `classifyZohoSmtpError` to print actionable root-cause hints for `EAUTH/535`, `ETIMEDOUT`, `ESOCKET`, `ENOTFOUND` |
+| `netlify/functions/zoho-error-classifier.ts` | NEW — pure module exporting `classifyZohoSmtpError(error, { host, user })` returning `{ cause, operatorMessage, clientMessage }`. Wrong-region heuristic compares email TLD to host TLD. |
+| `netlify/functions/send-enquiry.ts` | UPDATED — `sendMail` call wrapped in its own try/catch invoking the classifier; server logs `operatorMessage`, client receives generic `clientMessage` (closes the H-1 SMTP-error-leak finding from the previous session). Outer catch also sanitised. |
+| `.env.example` | REWRITTEN — comprehensive comments listing all 5 Zoho regional SMTP hosts (US/EU/AU/IN/CN) for free + Workspace tiers, app-specific password requirement, alias-must-match-from-address rule. Also fixed the `buildplandrafting` → `buildplanandrafting` typo flagged by architect. |
+| `package.json` | Added `tsx` devDep + `npm run diagnose:smtp` script |
+| `src/lib/__tests__/zoho-error-classifier.test.ts` | NEW — 15 unit tests covering every classifier branch, every region TLD, the clientMessage-never-leaks regression-lock, and the maskEmail short-local-part edge case |
+
+### Security review findings (4/4 fixed in this branch)
+
+- **H-1** (from previous session — now closed): outer catch in `send-enquiry.ts` no longer returns raw `error.message` to client
+- **M-1**: `maskEmail` now returns `***@domain` for short local-parts (≤3 chars) instead of echoing the full address
+- **M-2**: `unknown`-branch operator message now truncates to 120 chars and redacts base64-looking blobs (potential SASL credential echoes)
+- **L-2**: `maskEmail` de-duplicated — single implementation exported from `zoho-error-classifier.ts`, imported by `scripts/test-zoho-smtp.ts`
+
+### Pipeline state
+
+| Check | Result |
+|-------|--------|
+| `tsc --build` | clean |
+| `eslint . --max-warnings 0` | clean |
+| `npm test` | **101/101 passed** (was 86; added 15 classifier tests) |
+| `npm run diagnose:smtp` | reports actionable diagnosis instead of silent failure |
+
+### Open items rolled forward
+
+The architect's H-2 (no rate limiting on the function endpoint) is still open — needs Cloudflare or Netlify WAF, infrastructure-level work outside this branch's scope.
