@@ -14,6 +14,7 @@ import {
   type SubmissionSuccessPayload,
   type SubmissionErrorPayload,
 } from "../../src/lib/enquiry";
+import { classifyZohoSmtpError } from "./zoho-error-classifier";
 
 interface NetlifyEvent {
   httpMethod: string;
@@ -358,30 +359,43 @@ export const handler = async (event: NetlifyEvent): Promise<NetlifyResponse> => 
     const fromAddress = process.env.ENQUIRY_FROM_EMAIL?.trim() || process.env.SMTP_USER?.trim() || recipient;
     const fromName = process.env.ENQUIRY_FROM_NAME?.trim() || "Build Plan Drafting Website";
 
-    await transporter.sendMail({
-      to: recipient,
-      from: `"${fromName}" <${fromAddress}>`,
-      replyTo: parsedSubmission.data.email,
-      subject: `Website enquiry from ${parsedSubmission.data.name}`,
-      text: buildTextBody(parsedSubmission.data, storedFiles),
-      html: buildHtmlBody(parsedSubmission.data, storedFiles),
-      attachments: storedFiles.map((file) => ({
-        filename: file.originalName,
-        content: file.buffer,
-        contentType: file.mimeType,
-      })),
-    });
+    try {
+      await transporter.sendMail({
+        to: recipient,
+        from: `"${fromName}" <${fromAddress}>`,
+        replyTo: parsedSubmission.data.email,
+        subject: `Website enquiry from ${parsedSubmission.data.name}`,
+        text: buildTextBody(parsedSubmission.data, storedFiles),
+        html: buildHtmlBody(parsedSubmission.data, storedFiles),
+        attachments: storedFiles.map((file) => ({
+          filename: file.originalName,
+          content: file.buffer,
+          contentType: file.mimeType,
+        })),
+      });
 
-    return jsonResponse(200, {
-      ok: true,
-      warning,
-      uploadedFiles: storedFiles.map((file) => ({
-        originalName: file.originalName,
-        publicUrl: file.publicUrl,
-      })),
-    });
+      return jsonResponse(200, {
+        ok: true,
+        warning,
+        uploadedFiles: storedFiles.map((file) => ({
+          originalName: file.originalName,
+          publicUrl: file.publicUrl,
+        })),
+      });
+    } catch (smtpError) {
+      const host = process.env.SMTP_HOST?.trim() || "smtppro.zoho.com";
+      const user = process.env.SMTP_USER?.trim() || "";
+      const diagnosis = classifyZohoSmtpError(smtpError, { host, user });
+      console.error("[send-enquiry] SMTP failure:", diagnosis.operatorMessage);
+      return jsonResponse(500, { ok: false, error: diagnosis.clientMessage });
+    }
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Failed to send enquiry email.";
-    return jsonResponse(500, { ok: false, error: message });
+    const detail = error instanceof Error ? error.message : String(error);
+    console.error("[send-enquiry] Handler failure:", detail);
+    return jsonResponse(500, {
+      ok: false,
+      error:
+        "Unable to process your enquiry at this time. Please try again later or email us directly at info@buildplanandrafting.com.au.",
+    });
   }
 };
