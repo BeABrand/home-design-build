@@ -27,3 +27,10 @@ public/storage/*
 *.sln
 *.sw?
 .env
+
+# Playwright
+tests/e2e/.auth/
+test-results/
+playwright-report/
+playwright-results.xml
+playwright-results.json
